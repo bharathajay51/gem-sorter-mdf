@@ -11,7 +11,8 @@ int DispenserServoPin = 14;  //D5
 int SorterServoPin = 12;     //D6
 
 //Offset
-short int offset = 0;
+short int DispernserServoOffset = 5;
+short int SorterServoOffset = 0;
 
 //Initialise servo
 Servo myServo;
@@ -46,7 +47,7 @@ float calculateDistance(uint16_t r1, uint16_t g1, uint16_t b1, uint16_t r2, uint
 
 void CollectGems() {
   myServo.attach(DispenserServoPin, 544, 2400);
-  myServo.write(180);
+  myServo.write(160+DispernserServoOffset);
   Serial.println("Collecting Gems");
   delay(800);
   myServo.detach();
@@ -54,7 +55,7 @@ void CollectGems() {
 
 void MoveToColorSensor() {
   myServo.attach(DispenserServoPin, 544, 2400);
-  myServo.write(0);
+  myServo.write(0+DispernserServoOffset);
   Serial.println("Moving the Gems to the colour sensor");
   delay(1000);
   myServo.detach();
@@ -62,7 +63,7 @@ void MoveToColorSensor() {
 
 void DispenseGems() {
   myServo.attach(DispenserServoPin, 544, 2400);
-  myServo.write(80);
+  myServo.write(50+DispernserServoOffset);
   Serial.println("Dispensing Gems");
   delay(800);
   myServo.detach();
@@ -127,18 +128,12 @@ int SenseColour() {
 void MoveDispenserTo(int a) {
   if (a >= 0) {
     myServo.attach(SorterServoPin, 544, 2400);
-    myServo.write(angles[a] - offset);
+    myServo.write(angles[a] - SorterServoOffset);
     delay(1000);
     myServo.detach();
   }
 }
 
-void ResetDispenser() {
-  myServo.attach(SorterServoPin, 544, 2400);
-  myServo.write(42);
-  delay(1500);
-  myServo.detach();
-}
 
 void setup() {
   Serial.begin(115200);  // Start Serial Monitor
@@ -150,8 +145,6 @@ void setup() {
     Serial.println("TCS34725 found and initialized!");
   } else {
     Serial.println("No TCS34725 found ... check your connections");
-    while (1)
-      ;  // Halt the program
   }
 
   // Enable interrupts to avoid saturation
@@ -163,10 +156,9 @@ void loop() {
     String input = Serial.readStringUntil('\n');  // Read input
     input.trim();                                 // Remove extra spaces or newlines
 
-    if (input.equalsIgnoreCase("a")) {
+    if (input.equalsIgnoreCase("s")) {
       int num = 0;
       do {
-
         CollectGems();
         delay(300);
         MoveToColorSensor();
@@ -180,10 +172,10 @@ void loop() {
       } while (num >= 0);
     }
 
-    if (input.equalsIgnoreCase("s")) {
-      Serial.println("Moving dispenser servo to 90");
+    if (input.equalsIgnoreCase("c")) {
+      Serial.println("Moving dispenser servo to 60");
       myServo.attach(DispenserServoPin, 544, 2400);
-      myServo.write(0);
+      myServo.write(60);
       delay(1000);
       myServo.detach();
       Serial.println("Moving sorter servo to 90");
@@ -191,15 +183,6 @@ void loop() {
       myServo.write(90);
       delay(1000);
       myServo.detach();      
-    }
-
-    if (input.equalsIgnoreCase("c")) {
-      MoveToColorSensor();
-      delay(2000);
-      SenseColour();
-    }
-    if (input.equalsIgnoreCase("d")) {
-      DispenseGems();
     }
   }
 }
