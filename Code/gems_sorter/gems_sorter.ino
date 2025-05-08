@@ -1,80 +1,109 @@
+//************* HEADER FILES *****************
 #include <Servo.h>
 #include <Wire.h>
 #include <Adafruit_TCS34725.h>
+//********************************************
 
-// Define custom I2C pins for ESP32
+
+//*************** PIN SETUP ******************
+//I2C colour sensor pins
 #define SDA_PIN 5  //D1
 #define SCL_PIN 4  //D2
-
-// Pin declarations
+//Servo pins
 int DispenserServoPin = 14;  //D5
 int SorterServoPin = 12;     //D6
+//********************************************
 
-//Offset
-short int DispernserServoOffset = 5;
-short int SorterServoOffset = 0;
 
-//Initialise servo
-Servo myServo;
-
-// Create an instance of the TCS34725 sensor
-Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_300MS, TCS34725_GAIN_1X);
-
-// Predefined RGB values for basic colors
+//************* COLOUR STRUCT ****************
+//Structure to store colour names, RGB values & angles
 struct Color {
   const char* name;
   uint16_t r, g, b;
   int number;
 };
+//********************************************
 
+
+//************* COLOUR VALUES *****************
+//Table to compare sensed colour values
 Color colors[] = {
-  { "Pink", 236, 200, 255, 6 },
-  { "Blue", 80, 190, 255, 5 },
-  { "Green", 148, 255, 160, 4 },
-  { "Yellow", 238, 255, 140, 3 },
-  { "Red", 255, 153, 160, 2 },
-  { "Purple", 185, 191, 255, 1 },
-  { "Orange", 255, 170, 136, 0 },
-  { "Blank", 225, 222, 220, -1 }
+  { "Pink", 236, 200, 255, 144 },
+  { "Blue", 80, 190, 255, 128 },
+  { "Green", 148, 255, 160, 112 },
+  { "Yellow", 238, 255, 140, 92 },
+  { "Red", 255, 153, 160, 77 },
+  { "Purple", 185, 191, 255, 56 },
+  { "Orange", 255, 184, 145, 42 },
+  { "Blank", 255, 178, 148, -1 }
 };
+//********************************************
 
-int angles[] = { 42, 56, 77, 92, 112, 128, 144 };
-// Function to calculate the Euclidean distance between two colors
+
+//************ SERVO OFFSETS *****************
+//Change the offsets for allignment issues
+short int DispernserServoOffset = 10;
+short int SorterServoOffset = 0;
+//********************************************
+
+
+//************* INITIALISING *****************
+//Dispense servo instance
+Servo dispenserServo;
+//Sorting servo instance
+Servo sorterServo;
+//Colour sensor instance
+Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_300MS, TCS34725_GAIN_1X);
+//********************************************
+
+
+//******* CALCULATE COLOUR DISTANCE FN ********
 float calculateDistance(uint16_t r1, uint16_t g1, uint16_t b1, uint16_t r2, uint16_t g2, uint16_t b2) {
   return sqrt(pow(r2 - r1, 2) + pow(g2 - g1, 2) + pow(b2 - b1, 2));
 }
+//********************************************
 
 
+//************ COLLECT GEMS FN ***************
 void CollectGems() {
-  myServo.attach(DispenserServoPin, 544, 2400);
-  myServo.write(160+DispernserServoOffset);
+  dispenserServo.attach(DispenserServoPin, 544, 2400);
+  dispenserServo.write(160 + DispernserServoOffset);
   Serial.println("Collecting Gems");
   delay(800);
-  myServo.detach();
+  dispenserServo.detach();
 }
+//********************************************
 
+
+//********* MOVE GEMS TO SENSOR FN ***********
 void MoveToColorSensor() {
-  myServo.attach(DispenserServoPin, 544, 2400);
-  myServo.write(0+DispernserServoOffset);
-  Serial.println("Moving the Gems to the colour sensor");
+  dispenserServo.attach(DispenserServoPin, 544, 2400);
+  dispenserServo.write(0 + DispernserServoOffset);
+  Serial.println("Moving it to the colour sensor");
   delay(1000);
-  myServo.detach();
+  dispenserServo.detach();
 }
+//********************************************
 
+
+//************ DISPENSE GEMS FN **************
 void DispenseGems() {
-  myServo.attach(DispenserServoPin, 544, 2400);
-  myServo.write(50+DispernserServoOffset);
-  Serial.println("Dispensing Gems");
+  dispenserServo.attach(DispenserServoPin, 544, 2400);
+  dispenserServo.write(50 + DispernserServoOffset);
+  Serial.println("Dispensing");
   delay(800);
-  myServo.detach();
+  dispenserServo.detach();
 }
+//********************************************
 
+
+//************* SENSE COLOUR FN **************
 int SenseColour() {
   Serial.println("Sensing Colour");
 
   uint16_t r, g, b, c;
 
-  // Read color data
+  //Reading color data from the sensor
   tcs.getRawData(&r, &g, &b, &c);
 
   // Normalize RGB values (scale to 255 based on the highest value)
@@ -91,27 +120,18 @@ int SenseColour() {
   // Determine the closest color
   float minDistance = 1e6;  // Large number for initialization
   const char* closestColor = "Unknown";
-  int colorNumber = -1;  // Default value if no match found
+  int colorAngle = -1;  // Default value if no match found
 
   for (Color color : colors) {
     float distance = calculateDistance(normR, normG, normB, color.r, color.g, color.b);
     if (distance < minDistance) {
       minDistance = distance;
       closestColor = color.name;
-      colorNumber = color.number;
+      colorAngle = color.number;
     }
   }
-
-  // Print the raw and normalized values
-  Serial.println("-----------");
-  Serial.print("Raw Red: ");
-  Serial.print(r);
-  Serial.print(" Green: ");
-  Serial.print(g);
-  Serial.print(" Blue: ");
-  Serial.println(b);
-
-  Serial.print("Normalized Red: ");
+  Serial.println("--------------------------------");
+  Serial.print("Red: ");
   Serial.print(normR);
   Serial.print(" Green: ");
   Serial.print(normG);
@@ -119,70 +139,144 @@ int SenseColour() {
   Serial.println(normB);
 
   // Print the closest color
-  Serial.print("Closest Color: ");
-  Serial.println(closestColor);
+  if (colorAngle >= 0) {
+    Serial.print("Colour is ");
+    Serial.println(closestColor);
+    Serial.println("--------------------------------");
+  } else {
+    Serial.println("--------------------------------");
+    Serial.println("No gems detected!");
+  }
 
-  return colorNumber;  // Return the color number
+
+  return colorAngle;  // Return the color number
 }
+//********************************************
 
-void MoveDispenserTo(int a) {
-  if (a >= 0) {
-    myServo.attach(SorterServoPin, 544, 2400);
-    myServo.write(angles[a] - SorterServoOffset);
+
+//******** MOVE SLIDE TO ANGLE FN ************
+void MoveSlideTo(int angle) {
+  if (angle >= 0) {
+    sorterServo.attach(SorterServoPin, 544, 2400);
+    Serial.print("Moving slide to ");
+    Serial.println(angle - SorterServoOffset);
+    sorterServo.write(angle - SorterServoOffset);
     delay(1000);
-    myServo.detach();
+    sorterServo.detach();
   }
 }
+//********************************************
 
 
-void setup() {
-  Serial.begin(115200);  // Start Serial Monitor
+//*********** CALIBRATE SERVOS FN ************
+void CalibrateServos() {
+  Serial.println("######## Calibrate Servos #######");
+
+  Serial.println("Moving dispenser servo to 60");
+  dispenserServo.attach(DispenserServoPin, 544, 2400);
+  dispenserServo.write(60);
+
+  Serial.println("Moving sorter servo to 90");
+  sorterServo.attach(SorterServoPin, 544, 2400);
+  sorterServo.write(90);
+
+  Serial.println("#################################");
+  Serial.println(" ");
   Serial.println(" ");
 
+  delay(5000);
+  sorterServo.detach();
+  dispenserServo.detach();
+}
+//********************************************
+
+
+//************** PRINT MENU FN ***************
+void PrintMenu() {
+  Serial.println("############# Menu ##############");
+  Serial.println("Press 'S' to start sorting");
+  Serial.println("Press 'C' to calibrate the servos");
+  Serial.println("Press 'R' to read the colour");
+  Serial.println("#################################");
+  Serial.println(" ");
+  Serial.println(" ");
+}
+//********************************************
+
+
+//************** SETUP FUNCTION **************
+void setup() {
+
+  //***************SERIAL SETUP **************
+  //Starting serial communication
+  Serial.begin(9600);
+  Serial.println("\n");
+  //******************************************
+
+
+  //*********** COLOUR SENSOR SETUP **********
+  Serial.println("###### Colour Sensor Setup ######");
   Wire.begin(SDA_PIN, SCL_PIN);
 
   if (tcs.begin()) {
-    Serial.println("TCS34725 found and initialized!");
+    Serial.println("Colour sensor initialized!");
   } else {
-    Serial.println("No TCS34725 found ... check your connections");
+    Serial.println("Error, check your connections!");
   }
+  Serial.println("#################################");
+  Serial.println(" ");
+  Serial.println(" ");
 
-  // Enable interrupts to avoid saturation
-  tcs.setInterrupt(false);  // Turn on LED (if connected)
+  tcs.setInterrupt(false);
+  //*****************************************
+
+  //Menu
+  PrintMenu();
 }
+//*******************************************
 
+
+//************** LOOP FUNCTION **************
 void loop() {
-  if (Serial.available()) {                       // Check if data is received
-    String input = Serial.readStringUntil('\n');  // Read input
-    input.trim();                                 // Remove extra spaces or newlines
+  if (Serial.available()) {
+    String input = Serial.readStringUntil('\n');
+    input.trim();
 
     if (input.equalsIgnoreCase("s")) {
-      int num = 0;
+      int angle = 0;
+      unsigned int count = 0;
       do {
+        count++;
+        Serial.print("############ LOOP ");
+        Serial.print(count);
+        Serial.println(" #############");
         CollectGems();
         delay(300);
         MoveToColorSensor();
         delay(300);
-        num = SenseColour();
+        angle = SenseColour();
         delay(300);
-        MoveDispenserTo(num);
+        MoveSlideTo(angle);
         delay(300);
         DispenseGems();
         delay(300);
-      } while (num >= 0);
+        Serial.println("#################################");
+        Serial.println(" ");
+        Serial.println(" ");
+      } while (angle >= 0);
+
+      Serial.println("############ Result #############");
+      Serial.print("Number of gems sorted : ");
+      Serial.println(count-1);
+      Serial.println("#################################");
+      Serial.println(" ");
+      Serial.println(" ");
+      PrintMenu();
     }
 
     if (input.equalsIgnoreCase("c")) {
-      Serial.println("Moving dispenser servo to 60");
-      myServo.attach(DispenserServoPin, 544, 2400);
-      myServo.write(60);
-      delay(1000);
-      myServo.detach();
-      Serial.println("Moving sorter servo to 90");
-      myServo.attach(SorterServoPin, 544, 2400);
-      myServo.write(90);
-      delay(1000);
-      myServo.detach();      
+      CalibrateServos();
     }
   }
 }
+//*******************************************
