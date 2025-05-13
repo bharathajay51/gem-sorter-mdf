@@ -28,21 +28,21 @@ struct Color {
 //************* COLOUR VALUES *****************
 //Table to compare sensed colour values
 Color colors[] = {
-  { "Pink", 236, 200, 255, 144 },
-  { "Blue", 80, 190, 255, 128 },
-  { "Green", 148, 255, 160, 112 },
-  { "Yellow", 238, 255, 140, 92 },
-  { "Red", 255, 153, 160, 77 },
-  { "Purple", 185, 191, 255, 56 },
-  { "Orange", 255, 184, 145, 42 },
-  { "Blank", 255, 178, 148, -1 }
+  { "Pink", 236, 200, 255, 142 },
+  { "Blue", 80, 190, 255, 126 },
+  { "Green", 148, 255, 160, 110 },
+  { "Yellow", 238, 255, 140, 94 },
+  { "Red", 255, 153, 160, 76 },
+  { "Purple", 185, 191, 255, 60 },
+  { "Orange", 255, 184, 145, 44 },
+  { "Blank", 255, 184, 152, -1 }
 };
 //********************************************
 
 
 //************ SERVO OFFSETS *****************
 //Change the offsets for allignment issues
-short int DispernserServoOffset = 10;
+short int DispernserServoOffset = 0;
 short int SorterServoOffset = 0;
 //********************************************
 
