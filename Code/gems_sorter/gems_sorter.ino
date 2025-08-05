@@ -7,11 +7,11 @@
 
 //*************** PIN SETUP ******************
 //I2C colour sensor pins
-#define SDA_PIN 5  //D1
-#define SCL_PIN 4  //D2
+#define SDA_PIN 5  //D1 - Blue
+#define SCL_PIN 4  //D2 - Green
 //Servo pins
-int DispenserServoPin = 14;  //D5
-int SorterServoPin = 12;     //D6
+int DispenserServoPin = 14;  //D5 - Yellow
+int SorterServoPin = 12;     //D6 - Purple
 //********************************************
 
 
