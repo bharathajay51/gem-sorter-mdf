@@ -16,7 +16,7 @@ int SorterServoPin = 12;     //D6 - Purple
 
 
 //************* COLOUR STRUCT ****************
-//Structure to store colour names, RGB values & angles
+//Structure to store colour names, RGB values & angle
 struct Color {
   const char* name;
   uint16_t r, g, b;
@@ -28,14 +28,14 @@ struct Color {
 //************* COLOUR VALUES *****************
 //Table to compare sensed colour values
 Color colors[] = {
-  { "Pink", 236, 200, 255, 142 },
-  { "Blue", 80, 190, 255, 124 },
-  { "Green", 148, 255, 160, 110 },
-  { "Yellow", 238, 255, 140, 94 },
-  { "Red", 255, 153, 160, 76 },
-  { "Purple", 185, 191, 255, 60 },
+  { "Pink", 255, 148, 145, 142 },
+  { "Blue", 144, 237, 255, 124 },
+  { "Green", 199, 255, 111, 110 },
+  { "Yellow", 255, 215, 81, 94 },
+  { "Red", 255, 109, 91, 76 },
+  { "Purple", 255, 156, 185, 60 },
   { "Orange", 255, 184, 145, 44 },
-  { "Blank", 255, 181, 147, -1 }
+  { "Blank", 255, 219, 209, -1 }
 };
 //********************************************
 
@@ -174,19 +174,29 @@ void CalibrateServos() {
 
   Serial.println("Moving dispenser servo to 60");
   dispenserServo.attach(DispenserServoPin, 544, 2400);
+  dispenserServo.write(40);
+  delay(500);
+  dispenserServo.write(80);
+  delay(500);
   dispenserServo.write(60);
+  delay(500);
 
   Serial.println("Moving sorter servo to 90");
   sorterServo.attach(SorterServoPin, 544, 2400);
+  sorterServo.write(70);
+  delay(500);
+  sorterServo.write(110);
+  delay(500);
   sorterServo.write(90);
 
+  delay(3000);
+  sorterServo.detach();
+  dispenserServo.detach();
+
+  Serial.println("Servo calibration complete!");
   Serial.println("#################################");
   Serial.println(" ");
   Serial.println(" ");
-
-  delay(5000);
-  sorterServo.detach();
-  dispenserServo.detach();
 }
 //********************************************
 
@@ -267,7 +277,7 @@ void loop() {
 
       Serial.println("############ Result #############");
       Serial.print("Number of gems sorted : ");
-      Serial.println(count-1);
+      Serial.println(count - 1);
       Serial.println("#################################");
       Serial.println(" ");
       Serial.println(" ");
@@ -276,6 +286,9 @@ void loop() {
 
     if (input.equalsIgnoreCase("c")) {
       CalibrateServos();
+    }
+    if (input.equalsIgnoreCase("r")) {
+      SenseColour();
     }
   }
 }
