@@ -10,8 +10,8 @@
 #define SDA_PIN 5  //D1 - Blue
 #define SCL_PIN 4  //D2 - Green
 //Servo pins
-int DispenserServoPin = 14;  //D5 - Yellow
-int SorterServoPin = 12;     //D6 - Purple
+int TopServoPin = 14;  //D5 - Yellow
+int SlideServoPin = 12;     //D6 - Purple
 //********************************************
 
 
@@ -42,16 +42,16 @@ Color colors[] = {
 
 //************ SERVO OFFSETS *****************
 //Change the offsets for allignment issues
-short int DispernserServoOffset = 0;
-short int SorterServoOffset = 0;
+short int TopServoOffset = 0;
+short int SlideServoOffset = 0;
 //********************************************
 
 
 //************* INITIALISING *****************
-//Dispense servo instance
-Servo dispenserServo;
-//Sorting servo instance
-Servo sorterServo;
+//Top servo instance
+Servo TopServo;
+//Slide servo instance
+Servo SlideServo;
 //Colour sensor instance
 Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_300MS, TCS34725_GAIN_1X);
 //********************************************
@@ -66,33 +66,33 @@ float calculateDistance(uint16_t r1, uint16_t g1, uint16_t b1, uint16_t r2, uint
 
 //************ COLLECT GEMS FN ***************
 void CollectGems() {
-  dispenserServo.attach(DispenserServoPin, 544, 2400);
-  dispenserServo.write(160 + DispernserServoOffset);
+  TopServo.attach(TopServoPin, 544, 2400);
+  TopServo.write(160 + TopServoOffset);
   Serial.println("Collecting Gems");
   delay(800);
-  dispenserServo.detach();
+  TopServo.detach();
 }
 //********************************************
 
 
 //********* MOVE GEMS TO SENSOR FN ***********
 void MoveToColorSensor() {
-  dispenserServo.attach(DispenserServoPin, 544, 2400);
-  dispenserServo.write(0 + DispernserServoOffset);
+  TopServo.attach(TopServoPin, 544, 2400);
+  TopServo.write(0 + TopServoOffset);
   Serial.println("Moving it to the colour sensor");
   delay(1000);
-  dispenserServo.detach();
+  TopServo.detach();
 }
 //********************************************
 
 
-//************ DISPENSE GEMS FN **************
-void DispenseGems() {
-  dispenserServo.attach(DispenserServoPin, 544, 2400);
-  dispenserServo.write(50 + DispernserServoOffset);
+//************ Top GEMS FN **************
+void TopGems() {
+  TopServo.attach(TopServoPin, 544, 2400);
+  TopServo.write(50 + TopServoOffset);
   Serial.println("Dispensing");
   delay(800);
-  dispenserServo.detach();
+  TopServo.detach();
 }
 //********************************************
 
@@ -157,12 +157,12 @@ int SenseColour() {
 //******** MOVE SLIDE TO ANGLE FN ************
 void MoveSlideTo(int angle) {
   if (angle >= 0) {
-    sorterServo.attach(SorterServoPin, 544, 2400);
+    SlideServo.attach(SlideServoPin, 544, 2400);
     Serial.print("Moving slide to ");
-    Serial.println(angle - SorterServoOffset);
-    sorterServo.write(angle - SorterServoOffset);
+    Serial.println(angle - SlideServoOffset);
+    SlideServo.write(angle - SlideServoOffset);
     delay(1000);
-    sorterServo.detach();
+    SlideServo.detach();
   }
 }
 //********************************************
@@ -172,26 +172,26 @@ void MoveSlideTo(int angle) {
 void CalibrateServos() {
   Serial.println("######## Calibrate Servos #######");
 
-  Serial.println("Moving dispenser servo to 60");
-  dispenserServo.attach(DispenserServoPin, 544, 2400);
-  dispenserServo.write(40);
+  Serial.println("Moving top servo to 60");
+  TopServo.attach(TopServoPin, 544, 2400);
+  TopServo.write(40);
   delay(500);
-  dispenserServo.write(80);
+  TopServo.write(80);
   delay(500);
-  dispenserServo.write(60);
+  TopServo.write(60);
   delay(500);
 
-  Serial.println("Moving sorter servo to 90");
-  sorterServo.attach(SorterServoPin, 544, 2400);
-  sorterServo.write(70);
+  Serial.println("Moving slide servo to 90");
+  SlideServo.attach(SlideServoPin, 544, 2400);
+  SlideServo.write(70);
   delay(500);
-  sorterServo.write(110);
+  SlideServo.write(110);
   delay(500);
-  sorterServo.write(90);
+  SlideServo.write(90);
 
   delay(3000);
-  sorterServo.detach();
-  dispenserServo.detach();
+  SlideServo.detach();
+  TopServo.detach();
 
   Serial.println("Servo calibration complete!");
   Serial.println("#################################");
@@ -204,7 +204,7 @@ void CalibrateServos() {
 //************** PRINT MENU FN ***************
 void PrintMenu() {
   Serial.println("############# Menu ##############");
-  Serial.println("Press 'S' to start sorting");
+  Serial.println("Press 'S' to start Slide");
   Serial.println("Press 'C' to calibrate the servos");
   Serial.println("Press 'R' to read the colour");
   Serial.println("#################################");
@@ -268,7 +268,7 @@ void loop() {
         delay(300);
         MoveSlideTo(angle);
         delay(300);
-        DispenseGems();
+        TopGems();
         delay(300);
         Serial.println("#################################");
         Serial.println(" ");
