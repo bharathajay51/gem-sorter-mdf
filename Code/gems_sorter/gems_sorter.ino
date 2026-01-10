@@ -10,8 +10,8 @@
 #define SDA_PIN 5  //D1 - Blue
 #define SCL_PIN 4  //D2 - Green
 //Servo pins
-int TopServoPin = 14;  //D5 - Yellow
-int SlideServoPin = 12;     //D6 - Purple
+int TopServoPin = 14;    //D5 - Yellow
+int SlideServoPin = 12;  //D6 - Purple
 //********************************************
 
 
@@ -47,6 +47,15 @@ short int SlideServoOffset = 0;
 //********************************************
 
 
+//************ TIMING PARAMETERS *************
+int collectDelay = 800;
+int moveDelay = 1000;
+int dispenseDelay = 800;
+int slideDelay = 1000;
+int stepDelay = 300;
+//********************************************
+
+
 //************* INITIALISING *****************
 //Top servo instance
 Servo TopServo;
@@ -69,7 +78,7 @@ void CollectGems() {
   TopServo.attach(TopServoPin, 544, 2400);
   TopServo.write(160 + TopServoOffset);
   Serial.println("Collecting Gems");
-  delay(800);
+  delay(collectDelay);
   TopServo.detach();
 }
 //********************************************
@@ -80,7 +89,7 @@ void MoveToColorSensor() {
   TopServo.attach(TopServoPin, 544, 2400);
   TopServo.write(0 + TopServoOffset);
   Serial.println("Moving it to the colour sensor");
-  delay(1000);
+  delay(moveDelay);
   TopServo.detach();
 }
 //********************************************
@@ -91,7 +100,7 @@ void TopGems() {
   TopServo.attach(TopServoPin, 544, 2400);
   TopServo.write(50 + TopServoOffset);
   Serial.println("Dispensing");
-  delay(800);
+  delay(dispenseDelay);
   TopServo.detach();
 }
 //********************************************
@@ -161,7 +170,7 @@ void MoveSlideTo(int angle) {
     Serial.print("Moving slide to ");
     Serial.println(angle - SlideServoOffset);
     SlideServo.write(angle - SlideServoOffset);
-    delay(1000);
+    delay(slideDelay);
     SlideServo.detach();
   }
 }
@@ -172,22 +181,27 @@ void MoveSlideTo(int angle) {
 void CalibrateServos() {
   Serial.println("######## Calibrate Servos #######");
 
-  Serial.println("Moving top servo to 60");
+  Serial.print("Moving top servo to 60° + ");
+  Serial.print(TopServoOffset);
+  Serial.println("° offset");
   TopServo.attach(TopServoPin, 544, 2400);
-  TopServo.write(40);
+  TopServo.write(40 + TopServoOffset);
   delay(500);
-  TopServo.write(80);
+  TopServo.write(80 + TopServoOffset);
   delay(500);
-  TopServo.write(60);
+  TopServo.write(60 + TopServoOffset);
   delay(500);
 
-  Serial.println("Moving slide servo to 90");
+
+  Serial.print("Moving slide servo to 90° + ");
+  Serial.print(SlideServoOffset);
+  Serial.println("° offset");
   SlideServo.attach(SlideServoPin, 544, 2400);
-  SlideServo.write(70);
+  SlideServo.write(70 + SlideServoOffset);
   delay(500);
-  SlideServo.write(110);
+  SlideServo.write(110 + SlideServoOffset);
   delay(500);
-  SlideServo.write(90);
+  SlideServo.write(90 + SlideServoOffset);
 
   delay(3000);
   SlideServo.detach();
@@ -261,15 +275,15 @@ void loop() {
         Serial.print(count);
         Serial.println(" #############");
         CollectGems();
-        delay(300);
+        delay(stepDelay);
         MoveToColorSensor();
-        delay(300);
+        delay(stepDelay);
         angle = SenseColour();
-        delay(300);
+        delay(stepDelay);
         MoveSlideTo(angle);
-        delay(300);
+        delay(stepDelay);
         TopGems();
-        delay(300);
+        delay(stepDelay);
         Serial.println("#################################");
         Serial.println(" ");
         Serial.println(" ");
