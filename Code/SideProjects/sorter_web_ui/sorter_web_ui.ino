@@ -73,8 +73,8 @@ LedColor ledColors[] = {{"Pink", 255, 0, 40},  {"Blue", 0, 0, 255},
 
 //************ SERVO OFFSETS *****************
 // Adjust these offsets to fine-tune servo alignment
-short int TopServoOffset = 5;
-short int SlideServoOffset = -4;
+short int TopServoOffset = 0;
+short int SlideServoOffset = 0;
 //********************************************
 
 //************ TIMING PARAMETERS *************
